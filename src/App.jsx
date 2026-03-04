@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react'
 import { useMemo } from 'react'
 import { useCrashHistory } from './hooks/useCrashHistory'
 import { useSignalHistory } from './hooks/useSignalHistory'
@@ -74,5 +75,6 @@ export default function App() {
         </div>
       </main>
     </div>
+    <Analytics />
   )
 }
