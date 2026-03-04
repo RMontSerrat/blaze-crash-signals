@@ -90,7 +90,7 @@ function generateSignal(points, stats) {
     p60,
   } = stats
 
-  let confidence = 50
+  let confidence = 60
   const reasons = []
 
   // ===== CASHOUT: baseado nos percentis reais dos dados =====
@@ -191,7 +191,7 @@ function generateSignal(points, stats) {
   // ===== DECISÃO =====
   confidence = Math.max(10, Math.min(90, confidence))
 
-  let action = confidence >= 50 ? 'ENTRAR' : 'PULAR'
+  let action = confidence >= 40 ? 'ENTRAR' : 'PULAR'
 
   // Arredondar
   suggestedCashout = Math.round(suggestedCashout * 100) / 100

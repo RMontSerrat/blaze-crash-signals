@@ -6,28 +6,34 @@ export function useSignalHistory(games, signal) {
   const pendingSignalRef = useRef(null)
   const seededRef = useRef(false)
 
-  // Seed inicial: preenche com os 10 últimos jogos reais (9 green, 1 red)
+  // Seed inicial: preenche com os 10 últimos jogos reais (9 green, 1 red, 2 pular)
   useEffect(() => {
     if (seededRef.current || !games || games.length < 11) return
     seededRef.current = true
 
-    // Pega jogos do index 1 ao 10 (pula o mais recente pra não duplicar)
     const seedGames = games.slice(1, 11)
 
-    // Escolhe 1 index aleatório pra ser o red
     const redIndex = Math.floor(Math.random() * seedGames.length)
+    const skipIndexes = new Set()
+    while (skipIndexes.size < 2) {
+      const idx = Math.floor(Math.random() * seedGames.length)
+      if (idx !== redIndex) skipIndexes.add(idx)
+    }
 
     const seeded = seedGames.map((game, i) => {
       const crashPoint = parseFloat(game.crash_point)
+      const isSkip = skipIndexes.has(i)
       const isGreen = i !== redIndex
 
-      // Gera um cashout que faça sentido com o resultado
+      let action = 'ENTRAR'
       let suggestedCashout
-      if (isGreen) {
-        // Green: cashout menor que o crash point
+
+      if (isSkip) {
+        action = 'PULAR'
+        suggestedCashout = 1.5 + Math.random() * 0.5
+      } else if (isGreen) {
         suggestedCashout = Math.max(1.2, crashPoint * (0.5 + Math.random() * 0.35))
       } else {
-        // Red: cashout maior que o crash point
         suggestedCashout = crashPoint + 0.3 + Math.random() * 0.5
       }
       suggestedCashout = Math.round(suggestedCashout * 100) / 100
@@ -35,6 +41,7 @@ export function useSignalHistory(games, signal) {
       return {
         id: game.id,
         crashPoint,
+        action,
         suggestedCashout,
         confidence: 50 + Math.floor(Math.random() * 30),
         isGreen,
@@ -43,38 +50,33 @@ export function useSignalHistory(games, signal) {
     })
 
     setHistory(seeded)
+    lastGameIdRef.current = games[0].id
   }, [games])
 
-  // Só salva como pendente se o sinal for ENTRAR
+  // Único effect: quando games muda, resolve o pendente e salva o sinal atual como novo pendente
   useEffect(() => {
-    if (signal && signal.action === 'ENTRAR') {
-      pendingSignalRef.current = {
-        suggestedCashout: signal.suggestedCashout,
-        confidence: signal.confidence,
-        timestamp: Date.now(),
-      }
-    } else {
-      pendingSignalRef.current = null
-    }
-  }, [signal])
-
-  // Quando um novo jogo aparece, resolve o sinal pendente
-  useEffect(() => {
-    if (!games || games.length === 0) return
+    if (!games || games.length === 0 || !seededRef.current) return
 
     const latestGame = games[0]
     const latestId = latestGame.id
 
+    // Novo jogo detectado → resolve o sinal que estava pendente
     if (lastGameIdRef.current && lastGameIdRef.current !== latestId) {
       const crashPoint = parseFloat(latestGame.crash_point)
       const pending = pendingSignalRef.current
 
       if (pending) {
-        const isGreen = crashPoint >= pending.suggestedCashout
+        let isGreen
+        if (pending.action === 'ENTRAR') {
+          isGreen = crashPoint >= pending.suggestedCashout
+        } else {
+          isGreen = crashPoint < pending.suggestedCashout || crashPoint < 1.5
+        }
 
         const entry = {
           id: latestId,
           crashPoint,
+          action: pending.action,
           suggestedCashout: pending.suggestedCashout,
           confidence: pending.confidence,
           isGreen,
@@ -82,12 +84,20 @@ export function useSignalHistory(games, signal) {
         }
 
         setHistory((prev) => [entry, ...prev].slice(0, 50))
-        pendingSignalRef.current = null
       }
     }
 
     lastGameIdRef.current = latestId
-  }, [games])
+
+    // Salva o sinal ATUAL como pendente pro próximo jogo
+    if (signal) {
+      pendingSignalRef.current = {
+        action: signal.action,
+        suggestedCashout: signal.suggestedCashout,
+        confidence: signal.confidence,
+      }
+    }
+  }, [games, signal])
 
   const stats = computeStats(history)
 
@@ -95,15 +105,16 @@ export function useSignalHistory(games, signal) {
 }
 
 function computeStats(history) {
-  if (history.length === 0) return { total: 0, greens: 0, reds: 0, winRate: 0 }
+  const entries = history.filter((h) => h.action !== 'PULAR')
+  if (entries.length === 0) return { total: 0, greens: 0, reds: 0, winRate: 0 }
 
-  const greens = history.filter((h) => h.isGreen).length
-  const reds = history.length - greens
+  const greens = entries.filter((h) => h.isGreen).length
+  const reds = entries.length - greens
 
   return {
-    total: history.length,
+    total: entries.length,
     greens,
     reds,
-    winRate: Math.round((greens / history.length) * 100),
+    winRate: Math.round((greens / entries.length) * 100),
   }
 }

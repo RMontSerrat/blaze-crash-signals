@@ -5,8 +5,10 @@
   --color-bg-secondary: #111827;
   --color-bg-card: #1a2236;
   --color-bg-card-hover: #1f2a42;
-  --color-accent: #00e87b;
-  --color-accent-dim: #00c466;
+  --color-primary: #ff4444;
+  --color-primary-dim: #dd3333;
+  --color-success: #00e87b;
+  --color-success-dim: #00c466;
   --color-danger: #ff4757;
   --color-warning: #ffa502;
   --color-text-primary: #e2e8f0;

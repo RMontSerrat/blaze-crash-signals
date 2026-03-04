@@ -15,7 +15,7 @@ export function StatsPanel({ stats }) {
         <StatBox
           label="Abaixo 2x (10)"
           value={`${stats.belowTwo10}/10`}
-          highlight={stats.belowTwo10 >= 7 ? 'danger' : stats.belowTwo10 >= 5 ? 'warning' : 'accent'}
+          highlight={stats.belowTwo10 >= 7 ? 'danger' : stats.belowTwo10 >= 5 ? 'warning' : 'success'}
         />
         <StatBox
           label="Instant 0x (10)"
@@ -39,7 +39,7 @@ function StatBox({ label, value, highlight }) {
       ? 'text-danger'
       : highlight === 'warning'
         ? 'text-warning'
-        : 'text-accent'
+        : 'text-success'
     : 'text-text-primary'
 
   return (

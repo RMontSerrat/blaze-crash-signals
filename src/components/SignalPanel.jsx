@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 
 const ACTION_CONFIG = {
   ENTRAR: {
-    bg: 'bg-accent/10',
-    border: 'border-accent',
-    text: 'text-accent',
+    bg: 'bg-success/10',
+    border: 'border-success',
+    text: 'text-success',
     glow: 'animate-pulse-glow',
     icon: '✅',
     label: 'ENTRAR',
@@ -41,7 +41,7 @@ export function SignalPanel({ signal, newGame }) {
           Sinal Atual
         </h2>
         {newGame && (
-          <span className="text-xs bg-accent/20 text-accent px-2 py-1 rounded-full animate-slide-in">
+          <span className="text-xs bg-success/20 text-success px-2 py-1 rounded-full animate-slide-in">
             NOVO JOGO
           </span>
         )}
@@ -60,8 +60,8 @@ export function SignalPanel({ signal, newGame }) {
         <div className="bg-bg-secondary/60 rounded-lg p-4 mb-4">
           <div className="text-xs text-text-secondary mb-2">Cashout sugerido</div>
           <div className="flex items-baseline gap-2">
-            <span className="text-xs text-accent font-medium">Sair até</span>
-            <span className="text-3xl font-extrabold font-mono text-accent">
+            <span className="text-xs text-success font-medium">Sair até</span>
+            <span className="text-3xl font-extrabold font-mono text-success">
               {signal.suggestedCashout.toFixed(2)}x
             </span>
           </div>
@@ -78,7 +78,7 @@ export function SignalPanel({ signal, newGame }) {
           <div
             className={`h-2.5 rounded-full transition-all duration-500 ${
               signal.confidence >= 65
-                ? 'bg-accent'
+                ? 'bg-success'
                 : signal.confidence >= 45
                   ? 'bg-warning'
                   : 'bg-danger'
@@ -89,8 +89,10 @@ export function SignalPanel({ signal, newGame }) {
       </div>
 
       {/* Reasons */}
-      <div className="space-y-2">
-        <div className="text-xs text-text-secondary uppercase tracking-wider">Análise</div>
+      <div className="bg-bg-secondary/40 rounded-lg p-3 space-y-2">
+        <div className="text-[10px] text-text-secondary/60 uppercase tracking-wider flex items-center gap-1.5">
+          <span>🤖</span> Análise da IA
+        </div>
         {signal.reasons.map((reason, i) => (
           <div
             key={i}
