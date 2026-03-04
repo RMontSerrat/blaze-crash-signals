@@ -21,6 +21,7 @@ export default function App() {
   useSignalSound(signal, newGameDetected)
 
   return (
+    <>
     <div className="flex flex-col h-screen">
       {/* Status Bar */}
       <StatusBar
@@ -76,5 +77,6 @@ export default function App() {
       </main>
     </div>
     <Analytics />
+    </>
   )
 }
